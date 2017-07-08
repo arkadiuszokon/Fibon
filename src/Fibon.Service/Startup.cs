@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Fibon.Service.Framework;
+using RawRabbit.vNext;
+using RawRabbit;
 
 namespace Fibon.Service
 {
@@ -29,7 +32,19 @@ namespace Fibon.Service
         {
             // Add framework services.
             services.AddMvc();
+            ConfigureRabbitMq(services);
         }
+
+        private void ConfigureRabbitMq(IServiceCollection services)
+        {
+            var options = new RabbitMqOptions();
+            var section = Configuration.GetSection("rabbitmq");
+            section.Bind(options);
+
+            var client = BusClientFactory.CreateDefault(options);
+            services.AddSingleton<IBusClient>(_ => client);
+        }
+
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
