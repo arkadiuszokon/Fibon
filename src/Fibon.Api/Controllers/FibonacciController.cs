@@ -1,10 +1,22 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Fibon.Api.Repository;
+using Microsoft.AspNetCore.Mvc;
+using RawRabbit;
 
 namespace Fibon.Api.Controllers
 {
     [Route("[controller]")]
     public class FibonacciController : Controller
     {
+        private readonly IRepository _repository;
+        private readonly IBusClient _client;
+
+
+        public FibonacciController(IRepository repository, IBusClient busClient)
+        {
+            _repository = repository;
+            _client = client;
+        }
+
         [HttpGet("{number}")]
         public IActionResult Get(int number)
         {
