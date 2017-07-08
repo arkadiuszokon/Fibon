@@ -11,6 +11,8 @@ using Fibon.Api.Framework;
 using RawRabbit.vNext;
 using RawRabbit;
 using Fibon.Api.Repository;
+using Fibon.Messages.Events;
+using Fibon.Api.Handlers;
 
 namespace Fibon.Api
 {
@@ -45,6 +47,8 @@ namespace Fibon.Api
 
             var client = BusClientFactory.CreateDefault(options);
             services.AddSingleton<IBusClient>(_ => client);
+            services.AddTransient<IEventHandler<ValueCalculatedEvent>, ValueCalculatedEventHandler>();
+
         }
 
 
@@ -55,6 +59,17 @@ namespace Fibon.Api
             loggerFactory.AddDebug();
 
             app.UseMvc();
+            ConfigureRabbitMqSubscriptions(app);
+        }
+
+        private void ConfigureRabbitMqSubscriptions(IApplicationBuilder app)
+        {
+            IBusClient client = app.ApplicationServices.GetService<IBusClient>();
+            var handler = app.ApplicationServices.GetService<IEventHandler<ValueCalculatedEvent>>();
+            client.SubscribeAsync<ValueCalculatedEvent>(async (msg, context) =>
+            {
+                await handler.HandleAsync(msg);
+            });
         }
     }
 }
